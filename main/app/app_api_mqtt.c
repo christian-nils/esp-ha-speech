@@ -62,11 +62,17 @@ void data_handler(char *topic_, char *data_, int topic_len, int data_len)
       ESP_LOGI(TAG, "removing all commands");
       app_hass_rm_all_cmd(data);
     }
-    else if (strncmp(topic, "esp-ha/config/mute_output", 26) == 0)
+    else if (strncmp(topic, "esp-ha/config/mute_output", 29) == 0)
     {
       // Handle config messages
       ESP_LOGI(TAG, "un/muting speaker");
       app_hass_speaker_mute_cmd(data);
+    }
+    else if (strncmp(topic, "esp-ha/config/mute_input", 28) == 0)
+    {
+      // Handle config messages
+      ESP_LOGI(TAG, "un/muting mic");
+      app_hass_mic_mute_cmd(data);
     }
   }
 }

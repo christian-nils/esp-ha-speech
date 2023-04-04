@@ -20,6 +20,8 @@
 
 #include "bsp_board.h"
 
+#include "esp32_s3_box.h"
+
 #include "cJSON.h"
 
 #define MAX_HTTP_RECV_BUFFER 512
@@ -159,8 +161,35 @@ void app_hass_speaker_mute_cmd(char *msg)
   else
   {
     bsp_codec_config_t *codec_handle = bsp_board_get_codec_handle();
-    codec_handle->mute_set_fn(strcmp(sr_txt->valuestring, "true") == 0 ? true : false); // Note: this is to un/mute the output. The mic are linked to the ES7210 chip, this is the one to control to un/mute the mic.
+    codec_handle->mute_set_fn(strcmp(sr_txt->valuestring, "true") == 0 ? true : false); // Note: this is to un/mute the audio output.
     ESP_LOGI(TAG, "Toggle speaker mute on/off");
+    cJSON_Delete(root);
+    return;
+  }
+}
+
+void app_hass_mic_mute_cmd(char *msg)
+{
+  // Parse message as json
+  cJSON *root = cJSON_Parse(msg);
+  if (root == NULL)
+  {
+    ESP_LOGE(TAG, "Error parsing json");
+    cJSON_Delete(root);
+    return;
+  }
+  // Get command to add
+  cJSON *sr_txt = cJSON_GetObjectItemCaseSensitive(root, "confirm");
+  if (sr_txt == NULL)
+  {
+    ESP_LOGE(TAG, "Error parsing text");
+    cJSON_Delete(root);
+    return;
+  }
+  else
+  {
+    bsp_codec_es7210_mute(strcmp(sr_txt->valuestring, "true") == 0 ? true : false); // The mic are linked to the ES7210 chip, this is the one to control to un/mute the mic.
+    ESP_LOGI(TAG, "Toggle mic mute on/off");
     cJSON_Delete(root);
     return;
   }

@@ -13,6 +13,8 @@
 #include "es7210.h"
 #include "es8311.h"
 
+#include "esp32_s3_box.h"
+
 #define ES8311_SAMPLE_RATE (16000)
 #define ES8311_DEFAULT_VOLUME (60)
 
@@ -219,6 +221,45 @@ static esp_err_t bsp_codec_es7210_set()
   ret |= es7210_config_codec(es7210_handle, &codec_conf);
   ret |= es7210_config_volume(es7210_handle, ES7210_ADC_VOLUME);
   return ret;
+}
+
+esp_err_t es7210_write_reg(es7210_i2c_config_t *handle, uint8_t reg_addr, uint8_t reg_val)
+{
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, TAG, "invalid device handle");
+  esp_err_t ret = ESP_OK;
+
+  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+  ESP_GOTO_ON_FALSE(cmd, ESP_ERR_NO_MEM, err, TAG, "memory allocation for i2c cmd handle failed");
+
+  ESP_GOTO_ON_ERROR(i2c_master_start(cmd), err, TAG, "error while appending i2c command");
+  ESP_GOTO_ON_ERROR(i2c_master_write_byte(cmd, handle->i2c_addr << 1 | I2C_MASTER_WRITE, true),
+                    err, TAG, "error while appending i2c command");
+  ESP_GOTO_ON_ERROR(i2c_master_write_byte(cmd, reg_addr, true), err,
+                    TAG, "error while appending i2c command");
+  ESP_GOTO_ON_ERROR(i2c_master_write_byte(cmd, reg_val, true), err,
+                    TAG, "error while appending i2c command");
+  ESP_GOTO_ON_ERROR(i2c_master_stop(cmd), err, TAG, "error while appending i2c command");
+
+  ESP_GOTO_ON_ERROR(i2c_master_cmd_begin(handle->i2c_port, cmd, pdMS_TO_TICKS(1000)),
+                    err, TAG, "error while writing register");
+err:
+  if (cmd)
+  {
+    i2c_cmd_link_delete(cmd);
+  }
+  return ret;
+}
+
+esp_err_t bsp_codec_es7210_mute(bool mute)
+{
+  if (mute == true)
+  {
+    return es7210_write_reg(es7210_handle, 0x15, 0x03);
+  }
+  else
+  {
+    return es7210_write_reg(es7210_handle, 0x15, 0x00);
+  }
 }
 
 static void bsp_codec_init()

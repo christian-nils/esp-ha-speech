@@ -14,6 +14,7 @@ extern "C"
   void app_hass_add_cmd(char *msg);
   void app_hass_rm_all_cmd();
   void app_hass_speaker_mute_cmd();
+  void app_hass_mic_mute_cmd();
 
 #ifdef __cplusplus
 }
