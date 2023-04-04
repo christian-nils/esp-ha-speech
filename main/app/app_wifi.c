@@ -291,7 +291,6 @@ esp_err_t app_wifi_start(void)
   app_sntp_init();
 
   app_hass_init();
-
   return ESP_OK;
 }
 

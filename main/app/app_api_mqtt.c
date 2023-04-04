@@ -62,6 +62,12 @@ void data_handler(char *topic_, char *data_, int topic_len, int data_len)
       ESP_LOGI(TAG, "removing all commands");
       app_hass_rm_all_cmd(data);
     }
+    else if (strncmp(topic, "esp-ha/config/mute_output", 26) == 0)
+    {
+      // Handle config messages
+      ESP_LOGI(TAG, "un/muting speaker");
+      app_hass_speaker_mute_cmd(data);
+    }
   }
 }
 
@@ -150,6 +156,14 @@ void app_api_mqtt_start(void)
   // Subscribe to hermes and configuration topics
   esp_mqtt_client_subscribe(client, "hermes/#", 0);
   esp_mqtt_client_subscribe(client, "esp-ha/#", 0);
+  // esp_mqtt_client_subscribe(playBytesTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(hotwordTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(audioTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(restartTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(sayTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(sayFinishedTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(errorTopic.c_str(), 0);
+  // esp_mqtt_client_subscribe(setVolumeTopic.c_str(), 0);
 }
 
 /* send commands to mqtt */
