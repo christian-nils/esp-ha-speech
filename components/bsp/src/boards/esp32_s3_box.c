@@ -27,7 +27,8 @@
 #define ES7210_MIC_GAIN ES7210_MIC_GAIN_30DB
 #define ES7210_ADC_VOLUME (0)
 
-static bool bsp_home_button_get(void *param);
+static bool
+bsp_home_button_get(void *param);
 
 static const pmod_pins_t g_pmod[2] = {
     {

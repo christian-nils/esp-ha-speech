@@ -43,7 +43,37 @@ void data_handler(char *topic_, char *data_, int topic_len, int data_len)
   {
     // Handle hermes messages
     ESP_LOGI(TAG, "hermes message: %s", data);
-    // app_hass_handle_hermes(topic, data);
+    if (strncmp(topic, "hermes/dialogueManager/sessionStarted", 37) == 0)
+    {
+      // Handle config messages
+      cJSON *root = cJSON_Parse(data);
+      cJSON *siteId_txt = cJSON_GetObjectItemCaseSensitive(root, "siteId");
+
+      if (strcmp(siteId_txt->valuestring, MQTT_SITE_ID) == 0)
+      {
+        ESP_LOGI(TAG, "dialogue session started");
+        cJSON *sessionId_txt = cJSON_GetObjectItemCaseSensitive(root, "sessionId");
+        rhasspy_session.opened = 1;
+        strcpy(rhasspy_session.session_id, sessionId_txt->valuestring);
+      }
+    }
+    else if (strncmp(topic, "hermes/dialogueManager/sessionEnded", 35) == 0)
+    {
+      // Handle config messages
+      cJSON *root = cJSON_Parse(data);
+      cJSON *siteId_txt = cJSON_GetObjectItemCaseSensitive(root, "siteId");
+
+      if (strcmp(siteId_txt->valuestring, MQTT_SITE_ID) == 0)
+      {
+        cJSON *sessionId_txt = cJSON_GetObjectItemCaseSensitive(root, "sessionId");
+        if (strcmp(rhasspy_session.session_id, sessionId_txt->valuestring) == 0)
+        {
+          rhasspy_session.opened = 0;
+          memset(&(rhasspy_session.session_id), 0, sizeof(rhasspy_session.session_id));
+          ESP_LOGI(TAG, "dialogue session terminated");
+        }
+      }
+    }
   }
   else if (strncmp(topic, "esp-ha/", 7) == 0)
   {
@@ -162,14 +192,6 @@ void app_api_mqtt_start(void)
   // Subscribe to hermes and configuration topics
   esp_mqtt_client_subscribe(client, "hermes/#", 0);
   esp_mqtt_client_subscribe(client, "esp-ha/#", 0);
-  // esp_mqtt_client_subscribe(playBytesTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(hotwordTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(audioTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(restartTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(sayTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(sayFinishedTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(errorTopic.c_str(), 0);
-  // esp_mqtt_client_subscribe(setVolumeTopic.c_str(), 0);
 }
 
 /* send commands to mqtt */
@@ -178,5 +200,11 @@ void app_api_mqtt_send_cmd(char *topic, char *cmd)
   char *payload = malloc(strlen(cmd) + 100);
   sprintf(payload, "{\"input\": \"%s\", \"siteId\": \"%s\"}", cmd, MQTT_SITE_ID);
 
+  esp_mqtt_client_publish(client, topic, payload, 0, 0, 0);
+}
+
+/* send MQTT payload */
+void app_api_mqtt_send(char *topic, char *payload)
+{
   esp_mqtt_client_publish(client, topic, payload, 0, 0, 0);
 }

@@ -18,6 +18,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "app_sr.h"
+#include "app_rhasspy.h"
 
 #include "esp_mn_speech_commands.h"
 #include "esp_process_sdkconfig.h"
@@ -167,6 +168,8 @@ static void audio_detect_task(void *arg)
       detect_flag = true;
       g_sr_data->afe_handle->disable_wakenet(afe_data); // CN: deactivate the wakeword detection
       ESP_LOGI(TAG, LOG_BOLD(LOG_COLOR_GREEN) "AFE_FETCH_CHANNEL_VERIFIED, channel index: %d\n", res->trigger_channel_id);
+      /* Start dialogue manager session*/
+      rhasspy_start_session();
     }
 
     if (true == detect_flag)

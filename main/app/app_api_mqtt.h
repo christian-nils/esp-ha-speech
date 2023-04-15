@@ -1,6 +1,8 @@
 #pragma once
 #include "esp_err.h"
 #include "secrets.h"
+#include "app_rhasspy.h"
+#include "cJSON.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -20,7 +22,7 @@ extern "C"
 
   void app_api_mqtt_start(void);
   void app_api_mqtt_send_cmd(char *topic, char *payload);
-
+  void app_api_mqtt_send(char *topic, char *payload);
 #ifdef __cplusplus
 }
 #endif
