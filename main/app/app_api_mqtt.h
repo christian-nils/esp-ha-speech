@@ -22,7 +22,7 @@ extern "C"
 
   void app_api_mqtt_start(void);
   void app_api_mqtt_send_cmd(char *topic, char *payload);
-  void app_api_mqtt_send(char *topic, char *payload);
+  void app_api_mqtt_send(char *topic, char *payload, int len);
 #ifdef __cplusplus
 }
 #endif

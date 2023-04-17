@@ -12,7 +12,7 @@ void rhasspy_start_session()
   {
     char *payload = malloc(1000);
     sprintf(payload, "{\"init\":{\"type\":\"action\",\"canBeEnqueued\": false},\"siteId\":\"%s\"}", MQTT_SITE_ID);
-    app_api_mqtt_send(&"hermes/dialogueManager/startSession", payload);
+    app_api_mqtt_send(&"hermes/dialogueManager/startSession", payload, 0);
   }
   else
   {
@@ -21,6 +21,19 @@ void rhasspy_start_session()
   return;
 }
 
+void rhasspy_send_audio_frame(uint8_t *payload, int len)
+{
+  if (rhasspy_session.opened == 1)
+  {
+    char *audio_topic = malloc(strlen(MQTT_SITE_ID) + 30);
+    sprintf(audio_topic, "hermes/audioServer/%s/audioFrame", MQTT_SITE_ID);
+    app_api_mqtt_send(audio_topic, (char *)payload, len); // important to set the length, otherwise there will be some issue when using the auto detection of the length. This was seen on https://github.com/nopnop2002/esp-idf-mqtt-camera/blob/fd3582061b3feb2b23e6318cabf66984a4fc0929/main/main.c#L553.
+  }
+  else
+  {
+    ESP_LOGI(TAG, "Error, cannot send the audio frame, the dialogue session is not opened.");
+  }
+}
 // void rhasspy_set_session(rhasspy_session_struct *_rhasspy_session)
 // {
 //   rhasspy_session.opened = _rhasspy_session->opened;

@@ -15,7 +15,8 @@
 #include "esp_mn_models.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define SR_CONTINUE_DET 1
@@ -30,47 +31,69 @@ extern "C" {
 #define SR_CMD_STR_LEN_MAX 64
 #define SR_CMD_PHONEME_LEN_MAX 64
 
-typedef struct {
+  typedef struct
+  {
     wakenet_state_t wakenet_mode;
     esp_mn_state_t state;
     int command_id;
-} sr_result_t;
+  } sr_result_t;
 
-/**
- * @brief User defined command list
- *
- */
-typedef enum {
-    SR_CMD=0,
-} sr_user_cmd_t;
+  /**
+   * @brief User defined command list
+   *
+   */
+  typedef enum
+  {
+    SR_CMD = 0,
+  } sr_user_cmd_t;
 
-typedef enum {
+  typedef enum
+  {
     SR_LANG_EN,
     SR_LANG_CN,
     SR_LANG_MAX,
-} sr_language_t;
+  } sr_language_t;
 
-typedef struct sr_cmd_t {
+  typedef struct sr_cmd_t
+  {
     sr_user_cmd_t cmd;
     sr_language_t lang;
     uint32_t id;
     char str[SR_CMD_STR_LEN_MAX];
     char phoneme[SR_CMD_PHONEME_LEN_MAX];
-    SLIST_ENTRY(sr_cmd_t) next;
-} sr_cmd_t;
+    SLIST_ENTRY(sr_cmd_t)
+    next;
+  } sr_cmd_t;
 
-esp_err_t app_sr_start(bool record_en);
-esp_err_t app_sr_stop(void);
-esp_err_t app_sr_get_result(sr_result_t *result, TickType_t xTicksToWait);
-esp_err_t app_sr_set_language(sr_language_t new_lang);
-esp_err_t app_sr_add_cmd(const sr_cmd_t *cmd);
-esp_err_t app_sr_modify_cmd(uint32_t id, const sr_cmd_t *cmd);
-esp_err_t app_sr_remove_cmd(uint32_t id);
-esp_err_t app_sr_remove_all_cmd(void);
-const sr_cmd_t *app_sr_get_cmd_from_id(uint32_t id);
-uint8_t app_sr_search_cmd_from_user_cmd(sr_user_cmd_t user_cmd, uint8_t *id_list, uint16_t max_len);
-uint8_t app_sr_search_cmd_from_phoneme(const char *phoneme, uint8_t *id_list, uint16_t max_len);
-esp_err_t app_sr_update_cmds(void);
+  typedef struct wavfile_header
+  {
+    char riff_tag[4];      // 4
+    int riff_length;       // 4
+    char wave_tag[4];      // 4
+    char fmt_tag[4];       // 4
+    int fmt_length;        // 4
+    short audio_format;    // 2
+    short num_channels;    // 2
+    int sample_rate;       // 4
+    int byte_rate;         // 4
+    short block_align;     // 2
+    short bits_per_sample; // 2
+    char data_tag[4];      // 4
+    int data_length;       // 4
+  } wavfile_header_t;
+
+  esp_err_t app_sr_start(bool record_en);
+  esp_err_t app_sr_stop(void);
+  esp_err_t app_sr_get_result(sr_result_t *result, TickType_t xTicksToWait);
+  esp_err_t app_sr_set_language(sr_language_t new_lang);
+  esp_err_t app_sr_add_cmd(const sr_cmd_t *cmd);
+  esp_err_t app_sr_modify_cmd(uint32_t id, const sr_cmd_t *cmd);
+  esp_err_t app_sr_remove_cmd(uint32_t id);
+  esp_err_t app_sr_remove_all_cmd(void);
+  const sr_cmd_t *app_sr_get_cmd_from_id(uint32_t id);
+  uint8_t app_sr_search_cmd_from_user_cmd(sr_user_cmd_t user_cmd, uint8_t *id_list, uint16_t max_len);
+  uint8_t app_sr_search_cmd_from_phoneme(const char *phoneme, uint8_t *id_list, uint16_t max_len);
+  esp_err_t app_sr_update_cmds(void);
 
 #ifdef __cplusplus
 }

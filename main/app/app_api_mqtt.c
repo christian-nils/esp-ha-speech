@@ -204,7 +204,7 @@ void app_api_mqtt_send_cmd(char *topic, char *cmd)
 }
 
 /* send MQTT payload */
-void app_api_mqtt_send(char *topic, char *payload)
+void app_api_mqtt_send(char *topic, char *payload, int len)
 {
-  esp_mqtt_client_publish(client, topic, payload, 0, 0, 0);
+  esp_mqtt_client_publish(client, topic, payload, len, 0, 0);
 }

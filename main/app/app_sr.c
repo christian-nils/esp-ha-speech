@@ -62,6 +62,8 @@ static srmodel_list_t *models = NULL;
 
 static sr_data_t *g_sr_data = NULL;
 
+static wavfile_header_t audio_header;
+
 #define I2S_CHANNEL_NUM (2)
 #define NEED_DELETE BIT0
 #define FEED_DELETED BIT1
@@ -78,6 +80,24 @@ static const sr_cmd_t g_default_cmd_info[] = {
     {SR_CMD, SR_LANG_EN, 0, "Turn Off the Desk Lamp", "TkN eF jc DfSK LaMP", {NULL}},
 
 };
+
+static void initHeader(int readSize, int width, int rate)
+{
+  memcpy(audio_header.riff_tag, "RIFF", 4);
+  memcpy(audio_header.wave_tag, "WAVE", 4);
+  memcpy(audio_header.fmt_tag, "fmt ", 4);
+  memcpy(audio_header.data_tag, "data", 4);
+
+  audio_header.riff_length = (uint32_t)sizeof(audio_header) + (readSize * width);
+  audio_header.fmt_length = 16;
+  audio_header.audio_format = 1;
+  audio_header.num_channels = 1;
+  audio_header.sample_rate = rate;
+  audio_header.byte_rate = rate * width;
+  audio_header.block_align = width;
+  audio_header.bits_per_sample = width * 8;
+  audio_header.data_length = readSize * width;
+}
 
 static void audio_feed_task(void *arg)
 {
@@ -132,6 +152,8 @@ static void audio_detect_task(void *arg)
   esp_afe_sr_data_t *afe_data = arg;
   int afe_chunksize = afe_handle->get_fetch_chunksize(afe_data);
   // int nch = afe_handle->get_channel_num(afe_data);
+  initHeader(afe_chunksize, 16, 16000);
+  // initHeader(afe_chunksize, ES7210_BIT_WIDTH, ES7210_SAMPLE_RATE);
 
   int mu_chunksize = g_sr_data->multinet->get_samp_chunksize(g_sr_data->model_data);
   assert(mu_chunksize == afe_chunksize);
@@ -180,6 +202,21 @@ static void audio_detect_task(void *arg)
         fwrite(res->data, 1, afe_chunksize * sizeof(int16_t), g_sr_data->fp); // CN: could be interesting to create the payload to the hermes message
       }
 
+      if (NLU_RHASSPY_REMOTE)
+      {
+        ESP_LOGI(TAG, "prepare audio frame");
+        const int messageBytes = 512;
+        uint8_t payload[sizeof(audio_header) + messageBytes];
+        const int message_count = res->data_size / messageBytes;
+        ESP_LOGI(TAG, "data: %s", res->data);
+        for (int i = 0; i < message_count; i++)
+        {
+          memcpy(payload, &audio_header, sizeof(audio_header));
+          memcpy(&payload[sizeof(audio_header)], &(res->data)[messageBytes * i], messageBytes);
+          ESP_LOGI(TAG, "payload: %s", payload);
+          rhasspy_send_audio_frame((uint8_t *)payload, messageBytes);
+        }
+      }
       esp_mn_state_t mn_state = ESP_MN_STATE_DETECTING;
       if (false == sr_echo_is_playing())
       {

@@ -24,6 +24,7 @@ extern "C"
   extern rhasspy_session_struct rhasspy_session;
 
   void rhasspy_start_session();
+  void rhasspy_send_audio_frame(uint8_t *payload, int len);
 
 #ifdef __cplusplus
 }
