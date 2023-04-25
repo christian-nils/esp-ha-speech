@@ -152,7 +152,7 @@ static void audio_detect_task(void *arg)
   esp_afe_sr_data_t *afe_data = arg;
   int afe_chunksize = afe_handle->get_fetch_chunksize(afe_data);
   // int nch = afe_handle->get_channel_num(afe_data);
-  initHeader(afe_chunksize, 16, 16000);
+  initHeader(afe_chunksize, 2, 16000);
   // initHeader(afe_chunksize, ES7210_BIT_WIDTH, ES7210_SAMPLE_RATE);
 
   int mu_chunksize = g_sr_data->multinet->get_samp_chunksize(g_sr_data->model_data);
@@ -207,12 +207,13 @@ static void audio_detect_task(void *arg)
         ESP_LOGI(TAG, "prepare audio frame");
         const int messageBytes = 512;
         uint8_t payload[sizeof(audio_header) + messageBytes];
+        uint8_t *data_ptr = (uint8_t *)res->data;
         const int message_count = res->data_size / messageBytes;
-        ESP_LOGI(TAG, "data: %s", res->data);
+        ESP_LOGI(TAG, "chunksize: %d, int16 size: %d, data size: %d", afe_chunksize, sizeof(int16_t), res->data_size);
         for (int i = 0; i < message_count; i++)
         {
           memcpy(payload, &audio_header, sizeof(audio_header));
-          memcpy(&payload[sizeof(audio_header)], &(res->data)[messageBytes * i], messageBytes);
+          memcpy(&payload[sizeof(audio_header)], &data_ptr[messageBytes * i], messageBytes);
           ESP_LOGI(TAG, "payload: %s", payload);
           rhasspy_send_audio_frame((uint8_t *)payload, messageBytes);
         }
