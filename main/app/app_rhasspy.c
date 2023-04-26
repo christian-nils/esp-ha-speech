@@ -27,7 +27,7 @@ void rhasspy_send_audio_frame(uint8_t *payload, int len)
   {
     char *audio_topic = malloc(strlen(MQTT_SITE_ID) + 30);
     sprintf(audio_topic, "hermes/audioServer/%s/audioFrame", MQTT_SITE_ID);
-    app_api_mqtt_send(audio_topic, (char *)payload, len); // important to set the length, otherwise there will be some issue when using the auto detection of the length. This was seen on https://github.com/nopnop2002/esp-idf-mqtt-camera/blob/fd3582061b3feb2b23e6318cabf66984a4fc0929/main/main.c#L553.
+    app_api_mqtt_send(audio_topic, (char *)payload, len); // important to set the length (because the uint8 does not have a null termination as a char array can have), otherwise there will be some issue when using the auto detection of the length. This was seen on https://github.com/nopnop2002/esp-idf-mqtt-camera/blob/fd3582061b3feb2b23e6318cabf66984a4fc0929/main/main.c#L553.
   }
   else
   {

@@ -13,3 +13,4 @@
 
 #define NLU_HASS 0
 #define NLU_RHASSPY 1
+#define NLU_RHASSPY_REMOTE 0 // 1 if you want to use Rhasspy for the ASR, otherwise 0.

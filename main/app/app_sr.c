@@ -209,12 +209,10 @@ static void audio_detect_task(void *arg)
         uint8_t payload[sizeof(audio_header) + messageBytes];
         uint8_t *data_ptr = (uint8_t *)res->data;
         const int message_count = res->data_size / messageBytes;
-        ESP_LOGI(TAG, "chunksize: %d, int16 size: %d, data size: %d", afe_chunksize, sizeof(int16_t), res->data_size);
         for (int i = 0; i < message_count; i++)
         {
           memcpy(payload, &audio_header, sizeof(audio_header));
           memcpy(&payload[sizeof(audio_header)], &data_ptr[messageBytes * i], messageBytes);
-          ESP_LOGI(TAG, "payload: %s", payload);
           rhasspy_send_audio_frame((uint8_t *)payload, messageBytes);
         }
       }
